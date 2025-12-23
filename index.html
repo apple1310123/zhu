@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机点名系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+        
+        .display-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .name-display {
+            width: 100%;
+            height: 280px;
+            background-color: #f9f9ff;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 2px dashed #e1e5f1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .name-display::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.03) 0%, rgba(37, 117, 252, 0.03) 100%);
+            z-index: 0;
+        }
+        
+        .name-text {
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            text-align: center;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .selected {
+            color: #6a11cb;
+            text-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        .rolling {
+            color: #2575fc;
+            animation: roll 0.15s infinite;
+        }
+        
+        @keyframes roll {
+            0% { transform: translateY(5px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(5px); }
+        }
+        
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(106, 17, 203, 0.4);
+        }
+        
+        .start-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .instruction {
+            font-size: 1.1rem;
+            color: #6c757d;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .probability-section {
+            background-color: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #6a11cb;
+        }
+        
+        .probability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .probability-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .grade {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .grade-a { color: #4CAF50; }
+        .grade-b { color: #2196F3; }
+        .grade-c { color: #FF9800; }
+        .grade-d { color: #F44336; }
+        
+        .percentage {
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #2d3748;
+        }
+        
+        .student-list-section {
+            background-color: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .student-item {
+            background-color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .student-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-item.selected-student {
+            background-color: #6a11cb;
+            color: white;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.95rem;
+            border-top: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+        
+        .counter {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #6a11cb;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .name-text {
+                font-size: 3.2rem;
+            }
+            
+            .probability-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .student-list {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .start-btn {
+                padding: 18px 50px;
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .name-text {
+                font-size: 2.5rem;
+            }
+            
+            .start-btn {
+                padding: 16px 40px;
+                font-size: 1.3rem;
+            }
+            
+            .probability-section, .student-list-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-random"></i> 随机点名</h1>
+            <p class="subtitle">按住开始按钮随机抽取学生，松开按钮停止</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="display-section">
+                <div class="name-display">
+                    <div class="name-text" id="displayName">准备开始</div>
+                </div>
+                <div class="counter">已抽取: <span id="counter">0</span> 次</div>
+            </div>
+            
+            <div class="control-section">
+                <button class="start-btn" id="startBtn" onmousedown="startRolling()" onmouseup="stopRolling()" ontouchstart="startRolling()" ontouchend="stopRolling()">
+                    <i class="fas fa-play-circle"></i> 按住开始
+                </button>
+                <p class="instruction">点击并按住按钮开始随机点名，松开按钮停止并显示被选中的学生</p>
+            </div>
+            
+            <div class="probability-section">
+                <h2 class="section-title"><i class="fas fa-chart-pie"></i> 概率设置</h2>
+                <div class="probability-grid">
+                    <div class="probability-item">
+                        <span class="grade grade-a">A级</span>
+                        <span class="percentage">20%</span>
+                    </div>
+                    <div class="probability-item">
+                        <span class="grade grade-b">B级</span>
+                        <span class="percentage">35%</span>
+                    </div>
+                    <div class="probability-item">
+                        <span class="grade grade-c">C级</span>
+                        <span class="percentage">30%</span>
+                    </div>
+                    <div class="probability-item">
+                        <span class="grade grade-d">D级</span>
+                        <span class="percentage">15%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="student-list-section">
+                <h2 class="section-title"><i class="fas fa-users"></i> 学生名单 (共27人)</h2>
+                <div class="student-list" id="studentList">
+                    <!-- 学生名单将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>课堂随机点名系统 &copy; 2023 | 根据学生成绩等级设置抽取概率</p>
+        </footer>
+    </div>
+
+    <script>
+        // 学生名单数据
+        const students = [
+            "李宁心", "陈湘", "陈子涵", "李佳琳", "王心玥", 
+            "肖成伟", "李欣慧", "刘创意", "刘甲佳", "李宁欢", 
+            "林淑莹", "陆雪", "林欣瑜", "雍静", "杨梓珍", 
+            "丛琳", "陈兆丽", "李佳", "雷星月", "马羽茜", 
+            "乔嘉嫣", "谭聪", "杨筱", "钟春玲", "昝思含", 
+            "张朱清月", "巫紫玉", "赵文枝", "樊小丹"
+        ];
+        
+        // 根据成绩等级分配概率权重
+        // A级：20%，B级：35%，C级：30%，D级：15%
+        // 将学生分成四组，每组对应一个等级
+        const studentGroups = {
+            'A': [], // 20%
+            'B': [], // 35%
+            'C': [], // 30%
+            'D': []  // 15%
+        };
+        
+        // 分配学生到不同等级组
+        function assignStudentsToGroups() {
+            const totalStudents = students.length;
+            
+            // 计算每个等级的学生数量
+            const aCount = Math.round(totalStudents * 0.20); // 20%
+            const bCount = Math.round(totalStudents * 0.35); // 35%
+            const cCount = Math.round(totalStudents * 0.30); // 30%
+            // 剩余的学生分配到D级
+            const dCount = totalStudents - aCount - bCount - cCount;
+            
+            // 打乱学生顺序
+            const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+            
+            // 分配学生到各个等级组
+            let index = 0;
+            for (let i = 0; i < aCount; i++) {
+                studentGroups['A'].push(shuffledStudents[index++]);
+            }
+            for (let i = 0; i < bCount; i++) {
+                studentGroups['B'].push(shuffledStudents[index++]);
+            }
+            for (let i = 0; i < cCount; i++) {
+                studentGroups['C'].push(shuffledStudents[index++]);
+            }
+            for (let i = 0; i < dCount; i++) {
+                studentGroups['D'].push(shuffledStudents[index++]);
+            }
+        }
+        
+        // 根据等级概率随机选择一个学生
+        function selectStudentByProbability() {
+            // 随机数决定选择的等级
+            const random = Math.random() * 100;
+            
+            let selectedGroup;
+            if (random < 20) {
+                selectedGroup = 'A'; // 20%
+            } else if (random < 55) { // 20+35=55
+                selectedGroup = 'B'; // 35%
+            } else if (random < 85) { // 55+30=85
+                selectedGroup = 'C'; // 30%
+            } else {
+                selectedGroup = 'D'; // 15%
+            }
+            
+            // 从选中的等级组中随机选择一个学生
+            const groupStudents = studentGroups[selectedGroup];
+            const randomIndex = Math.floor(Math.random() * groupStudents.length);
+            return {
+                name: groupStudents[randomIndex],
+                grade: selectedGroup
+            };
+        }
+        
+        // 初始化变量
+        let rollingInterval;
+        let isRolling = false;
+        let rollSpeed = 80; // 滚动速度(毫秒)
+        let rollCounter = 0;
+        let lastSelectedStudent = null;
+        
+        // 初始化页面
+        function initPage() {
+            // 分配学生到等级组
+            assignStudentsToGroups();
+            
+            // 生成学生列表
+            const studentListEl = document.getElementById('studentList');
+            studentListEl.innerHTML = '';
+            
+            students.forEach(student => {
+                const studentEl = document.createElement('div');
+                studentEl.className = 'student-item';
+                studentEl.textContent = student;
+                studentEl.id = `student-${student}`;
+                studentListEl.appendChild(studentEl);
+            });
+            
+            // 初始化计数器
+            updateCounter();
+        }
+        
+        // 开始滚动
+        function startRolling() {
+            if (isRolling) return;
+            
+            isRolling = true;
+            const displayNameEl = document.getElementById('displayName');
+            displayNameEl.classList.remove('selected');
+            displayNameEl.classList.add('rolling');
+            
+            // 清除之前可能存在的选中状态
+            if (lastSelectedStudent) {
+                const lastStudentEl = document.getElementById(`student-${lastSelectedStudent.name}`);
+                if (lastStudentEl) {
+                    lastStudentEl.classList.remove('selected-student');
+                }
+            }
+            
+            // 开始滚动动画
+            rollingInterval = setInterval(() => {
+                const selected = selectStudentByProbability();
+                displayNameEl.textContent = selected.name;
+            }, rollSpeed);
+            
+            // 更新按钮状态
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-stop-circle"></i> 松开停止';
+        }
+        
+        // 停止滚动
+        function stopRolling() {
+            if (!isRolling) return;
+            
+            clearInterval(rollingInterval);
+            isRolling = false;
+            
+            const displayNameEl = document.getElementById('displayName');
+            displayNameEl.classList.remove('rolling');
+            displayNameEl.classList.add('selected');
+            
+            // 最后再选择一次作为最终结果
+            const selected = selectStudentByProbability();
+            displayNameEl.textContent = selected.name;
+            lastSelectedStudent = selected;
+            
+            // 更新选中学生的样式
+            const studentEl = document.getElementById(`student-${selected.name}`);
+            if (studentEl) {
+                // 清除之前可能存在的选中状态
+                document.querySelectorAll('.student-item.selected-student').forEach(el => {
+                    el.classList.remove('selected-student');
+                });
+                
+                studentEl.classList.add('selected-student');
+                
+                // 滚动到选中的学生
+                studentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            // 更新计数器
+            rollCounter++;
+            updateCounter();
+            
+            // 更新按钮状态
+            document.getElementById('startBtn').innerHTML = '<i class="fas fa-play-circle"></i> 按住开始';
+        }
+        
+        // 更新计数器显示
+        function updateCounter() {
+            document.getElementById('counter').textContent = rollCounter;
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+        
+        // 防止移动端触摸时的默认行为
+        document.getElementById('startBtn').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.getElementById('startBtn').addEventListener('touchend', function(e) {
+            e.preventDefault();
+        });
+        
+        // 键盘快捷键支持：空格键控制开始/停止
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' && !isRolling) {
+                e.preventDefault();
+                startRolling();
+            }
+        });
+        
+        document.addEventListener('keyup', function(e) {
+            if (e.code === 'Space' && isRolling) {
+                e.preventDefault();
+                stopRolling();
+            }
+        });
+    </script>
+</body>
+</html>
